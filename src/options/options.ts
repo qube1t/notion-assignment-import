@@ -571,7 +571,7 @@ Storage.getSavedAssignments().then(assignmentByCourses => {
 				// removes selected option from past dropdowns
 				var otherSelects = document.getElementsByClassName('assignment-group-select');
 				for (let n of otherSelects as HTMLCollectionOf<HTMLSelectElement>) {
-					if (n != element){
+					if (n != element && n.value == element.value){
 						let alreadySelected;
 						for (let c of n.children as HTMLCollectionOf<HTMLOptionElement>){
 							console.log(c)
