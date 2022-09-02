@@ -51,6 +51,7 @@ interface Enrollment {
 export type Assignments = Assignment[];
 
 export interface Assignment {
+	type: string;
 	id: number;
 	description: string | null;
 	due_at: string;

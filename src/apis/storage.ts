@@ -102,7 +102,12 @@ export const Storage = <const>{
 		return await browser.storage.local.remove(KEYS.assignments);
 	},
 
+	async setEmojiGroups(emojiGroups: SavedAssignments) {
+		return await browser.storage.local.set({ 'emojiGroups': emojiGroups });
+	},
+
 	async getSavedFields(): Promise<SavedFields> {
+		// alert()
 		const fieldsWithDefaultValues = Object.fromEntries(
 			Object.entries(CONFIGURATION.FIELDS).map(([field, { defaultValue }]) => [field, defaultValue]),
 		);

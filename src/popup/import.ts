@@ -53,6 +53,10 @@ export async function exportToNotion(): Promise<void | IFetchedAssignment[]> {
 			return this.assignment.due;
 		}
 
+		public get type(): string {
+			return this.assignment.type;
+		}
+
 		private static verifySelectValue(value: string | null): Extract<valueof<CreatePageParameters['properties']>, { type?: 'select'; }>['select'] {
 			return (value)
 				? {

@@ -11,6 +11,8 @@ import { PropertySelect, SelectPropertyValueSelect } from './PropertySelects';
 
 import { SavedFields } from '../types/storage';
 import { valueof } from '../types/utils';
+import { number } from 'yargs';
+import { EmojiRequest } from '../types/notion';
 
 // if an id ever changes in HTML, it must be updated here
 // static type checking will then be available through ElementId
@@ -96,7 +98,7 @@ const OptionsPage = <const>{
 		return null;
 	},
 
-	getEmojiGroups(){
+	saveEmojiGroups(){
 		// var course_ids = Array.prototype.slice.call(document.getElementsByClassName('courses-select') as HTMLCollectionOf<HTMLSelectElement>)
 		// 				.map(elem => {
 		// 					let childrn = Array.prototype.slice.call(elem.children);
@@ -105,18 +107,72 @@ const OptionsPage = <const>{
 		
 						// console.log([...document.getElementsByClassName('assignment-group-select') as HTMLCollectionOf<HTMLSelectElement>])
 
-		var assignment_groups = Array.from(document.getElementsByClassName('assignment-group-select') as HTMLCollectionOf<HTMLSelectElement>)
-						.map(elem => {
-							let childrn = [...elem.children];
-							// let childrnIds = childrn.map(c => c.id);
-							// alert(JSON.stringify(childrnIds))
-							return childrn.filter((c: any) => c.selected)[0]
-						});
+		var emoji_groups = [...document.getElementsByClassName('emoji-group')]
+							.map(gp => {
+								return {
+									name: (gp.getElementsByClassName('group-name')[0] as HTMLInputElement).value,
+									emoji: (gp.getElementsByClassName('group-emoji')[0] as HTMLInputElement).value as EmojiRequest,
+									assign: [...gp.getElementsByClassName('assignment-group-select') as HTMLCollectionOf<HTMLSelectElement>]
+										.map(elem => {
+											let childrn = [...elem.children];
+											return childrn.filter((c: any) => c.selected)[0]
+										}).map(e => e.id.slice(1).split('-').map(cod => parseInt(cod)))
+							}
+							}
+								);
 		
-		var requiredIds = assignment_groups.map(e => e.id);
+		console.log(emoji_groups)
+		// var assignment_groups = Array.from(document.getElementsByClassName('assignment-group-select') as HTMLCollectionOf<HTMLSelectElement>)
+		// 				.map(elem => {
+		// 					let childrn = [...elem.children];
+		// 					// let childrnIds = childrn.map(c => c.id);
+		// 					// alert(JSON.stringify(childrnIds))
+		// 					return childrn.filter((c: any) => c.selected)[0]
+		// 				});
+		
+		// var requiredIds = assignment_groups.map(e => e.id);
 
 		Storage.getSavedAssignments().then(assignmentByCourses => {
+			let courses= Object.keys(assignmentByCourses);
+
+			let arrayedAssignmentTypeByCourses = Object.entries(assignmentByCourses).map(
+				course => [...new Set(course[1].map(assignment=>assignment.type))]
+				);
+			// let assignmentTypeByCourses = Object.fromEntries(arrayedAssignmentTypeByCourses)
 			
+			
+			// for (let cours of courses){
+			// 	for (let assign of assignmentByCourses[cours]){
+
+			// 	}
+			// }
+
+			for (let egroup of emoji_groups){
+				for (let ca of egroup['assign']){
+					// let course_assign_code = ca.slice(1);
+					// var course_assign = course_assign_code.split('-').map(cod => parseInt(cod))
+					// console.log(course_assign)
+					// console.log(assignmentByCourses[courses[course_assign[0]]])
+
+					assignmentByCourses[courses[ca[0]]] = assignmentByCourses[courses[ca[0]]].map(
+						assign => {
+							// alert()
+							// assign.type= 'null';
+							console.log(arrayedAssignmentTypeByCourses[ca[0]],  assign.type, ca[1])
+							if (arrayedAssignmentTypeByCourses[ca[0]].indexOf(assign.type) == ca[1])
+							assign.icon = egroup['emoji']
+							return assign
+						}
+						)
+
+					// assignmentByCourses[courses[ca[0]]][ca[1]].icon = egroup['emoji'] ? egroup['emoji'] : null
+
+
+				}
+
+			}
+			console.log(assignmentByCourses)
+			Storage.setSavedAssignments(assignmentByCourses)
 		});
 		
 	}
@@ -467,10 +523,10 @@ Storage.getSavedAssignments().then(assignmentByCourses => {
 	</div>`
 	
 	const emojigroupHTML = `
-	<div style="display: flex; flex-direction: column; border:1px">
+	<div style="display: flex; flex-direction: column; border:1px" class="emoji-group">
 		<div style="display: flex; flex-direction: row; justify-content: space-between;">
-			<input placeholder="Group Name eg. Quizzes" style="margin-right: 10px"> 
-			<input placeholder="Insert emoji" style="margin-right:10px">
+			<input class="group-name" placeholder="Group Name eg. Quizzes" style="margin-right: 10px"> 
+			<input class="group-emoji" placeholder="Insert emoji" style="margin-right:10px">
 			<button type='reset' id='remove-emoji-group' class='button red hover row'>Remove Group</button>
 		</div>
 		<div id="assignment-groups-container" style="display: flex; flex-direction: column;">
@@ -560,11 +616,15 @@ Storage.getSavedAssignments().then(assignmentByCourses => {
 					(element.previousElementSibling)!.insertAdjacentHTML('beforeend', emojigroupHTML);
 					break;
 				case 'remove-assign-type':
-					OptionsPage.getEmojiGroups();
+					// OptionsPage.saveEmojiGroups();
 					element.parentElement?.remove();
 					break;
 				case 'remove-emoji-group':
 					element.parentElement?.parentElement?.remove();
+					break;
+				case 'save-emoji':
+					alert()
+					OptionsPage.saveEmojiGroups()
 					break;
 			}
 	});
