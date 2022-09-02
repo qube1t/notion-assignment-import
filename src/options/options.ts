@@ -45,6 +45,7 @@ interface OptionsElements {
 		advancedOptions: 'advanced-options';
 		courseCodesGroup: 'course-code-overrides-group';
 		courseEmojisGroup: 'course-emojis-group';
+		assignmentTypeEmojisGroup: 'assignment-type-emojis-group'
 	};
 }
 
@@ -58,6 +59,7 @@ type OptionsElementId = OptionsRestoreButtonId | OptionsButtonId | OptionsSelect
 const OptionsPage = <const>{
 	async restoreOptions() {
 		const savedFields = await Storage.getSavedFields();
+		console.log(JSON.stringify(savedFields))
 
 		Object.entries(savedFields).forEach(([field, value]) => {
 			const { input, defaultValue } = CONFIGURATION.FIELDS[<keyof typeof savedFields>field];
@@ -93,6 +95,31 @@ const OptionsPage = <const>{
 
 		return null;
 	},
+
+	getEmojiGroups(){
+		// var course_ids = Array.prototype.slice.call(document.getElementsByClassName('courses-select') as HTMLCollectionOf<HTMLSelectElement>)
+		// 				.map(elem => {
+		// 					let childrn = Array.prototype.slice.call(elem.children);
+		// 					return childrn.filter((c: any) => c.selected)[0]
+		// 				});
+		
+						// console.log([...document.getElementsByClassName('assignment-group-select') as HTMLCollectionOf<HTMLSelectElement>])
+
+		var assignment_groups = Array.from(document.getElementsByClassName('assignment-group-select') as HTMLCollectionOf<HTMLSelectElement>)
+						.map(elem => {
+							let childrn = [...elem.children];
+							// let childrnIds = childrn.map(c => c.id);
+							// alert(JSON.stringify(childrnIds))
+							return childrn.filter((c: any) => c.selected)[0]
+						});
+		
+		var requiredIds = assignment_groups.map(e => e.id);
+
+		Storage.getSavedAssignments().then(assignmentByCourses => {
+			
+		});
+		
+	}
 };
 
 const AdvancedOptions = <const>{
@@ -370,12 +397,180 @@ document.addEventListener('DOMContentLoaded', async () => {
 		})
 		.setValueValidator(EmojiField)
 		.setValueValidateOn('input');
+	
+	
 
 	await OptionsPage.restoreOptions();
 
 	Object.values(buttons.restore).forEach(button => button.toggle());
 });
 
+// radio button hidding/unhidding sections
+document.getElementById("emoji-sel-course")?.addEventListener('click', function (event) {
+	if (event !== null && event.target !== null){
+		const element = event.target as HTMLElement;
+		if (event.target  && element.matches("input[type='radio']")) {
+			document.getElementById("emoji-groups-assignment-type")!.style.display = "none";
+			document.getElementById("emoji-groups-course")!.style.display = "block";
+		}
+}
+});
+
+document.getElementById("emoji-sel-assignment-group")?.addEventListener('click', function (event) {
+	if (event !== null && event.target !== null){
+		const element = event.target as HTMLElement;
+		if (event.target  && element.matches("input[type='radio']")) {
+			document.getElementById("emoji-groups-course")!.style.display = "none";
+			document.getElementById("emoji-groups-assignment-type")!.style.display = "block";
+		}
+}
+});
+
+
+
+// var assignmentGroups
+
+Storage.getSavedAssignments().then(assignmentByCourses => {
+	let arrayedAssignmentTypeByCourses = Object.entries(assignmentByCourses).map(
+		course => [course[0], [...new Set(course[1].map(assignment=>assignment.type))]]
+		);
+		
+	// let assignmentTypeByCourses = arrayedAssignmentTypeByCourses.reduce(
+	// 	(o, key) => ({ ...o, [(key[0] as string)]: key[1]}), {}
+	// 	);
+			
+	var coursesHTML = arrayedAssignmentTypeByCourses.map(
+		(course, i) => `<option value='${i}'>${course[0]}</option>`
+		);
+
+	var arrayedAssignmentGroupsHTML = arrayedAssignmentTypeByCourses.map(
+		(course, i) => <Array<string>>(course[1] as Array<string>).map((types, ii) => `<option id='a${i}-${ii}' value='${i}'>${types}</option>`)
+		);
+	var assignmentGroupsHTML = arrayedAssignmentGroupsHTML.flat()
+		// localStorage.setItem("courses", JSON.stringify(courses));
+	// let array_optionHTML = Object.values(assignmentTypeByCourses);
+	
+	console.log(assignmentGroupsHTML)
+	console.log(assignmentGroupsHTML.join(''))
+
+	const assigroupHTML = `
+	<div id="assignment-group-countainer" style="display: flex; flex-direction:row; justify-content: space-between;">
+		<select style="flex:2; margin-right: 10px" name="courses" class="courses-select">
+		<option value="" selected disabled hidden>Course</option>
+		${coursesHTML.join('')}
+		</select>
+		<select style="flex:2; margin-right: 10px" name="assignment-group" class="assignment-group-select">
+		<option value="" selected disabled hidden>Assignment Group</option>
+		${assignmentGroupsHTML.join('')}
+		</select>
+		<button type='reset' id='remove-assign-type' style="flex:0.3;" class='button red hover row'>X</button>
+	</div>`
+	
+	const emojigroupHTML = `
+	<div style="display: flex; flex-direction: column; border:1px">
+		<div style="display: flex; flex-direction: row; justify-content: space-between;">
+			<input placeholder="Group Name eg. Quizzes" style="margin-right: 10px"> 
+			<input placeholder="Insert emoji" style="margin-right:10px">
+			<button type='reset' id='remove-emoji-group' class='button red hover row'>Remove Group</button>
+		</div>
+		<div id="assignment-groups-container" style="display: flex; flex-direction: column;">
+			${assigroupHTML}
+		</div>
+		<button type='button' id='add-assignment-group' class='button green hover row'>Add an Assignment Group</button>
+	</div>  `
+	
+	// var removeAssignmentGroupButton = document.getElementById("remove-assign-types")
+	
+	var inputSelectsDOM = document.createElement("input");
+	inputSelectsDOM.innerHTML = assignmentGroupsHTML.join('');
+	var inputSelectsDOMChildren = inputSelectsDOM.children;
+
+
+	const performSep = (element: HTMLSelectElement) => {
+		(element.nextElementSibling)!.innerHTML = ([... inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(
+			(o) => element.value.includes(o.value)
+		  ).map(o => o.outerHTML).join('')
+	}
+
+	document.addEventListener('change', event => {
+		const element = event.target as HTMLSelectElement;
+		if (event != null)
+		switch (element!.className) {
+			case 'courses-select':
+				(element.nextElementSibling)!.innerHTML = ([... inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(
+					(o) => element.value.includes(o.value)
+				  ).map(o => o.outerHTML).join('')
+				break;
+
+			case 'assignment-group-select':
+				// console.log(element.options[element.options.selectedIndex].id)
+				// removes the selected option from future uses
+				console.log(([...inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(elem => elem.id != element.options[element.options.selectedIndex].id).map(elem => elem.outerHTML).join(''))
+				let optionsElem = ([...inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(elem => elem.id != element.options[element.options.selectedIndex].id).map(elem => elem.outerHTML).join('')
+
+				var _inputSelectsDOM = document.createElement("input");
+				_inputSelectsDOM.innerHTML = optionsElem;
+				inputSelectsDOMChildren = _inputSelectsDOM.children;
+
+				// removes selected option from past dropdowns
+				var otherSelects = document.getElementsByClassName('assignment-group-select');
+				for (let n of otherSelects as HTMLCollectionOf<HTMLSelectElement>) {
+					if (n != element){
+						let alreadySelected;
+						for (let c of n.children as HTMLCollectionOf<HTMLOptionElement>){
+							console.log(c)
+							if (c.id == element.options[element.options.selectedIndex].id)
+								c.value = 'X';
+							if (c.selected == true){
+								alreadySelected = c.id
+							}
+							}
+						// alert(alreadySelected);
+
+						(n)!.innerHTML = ([... n.children] as Array<HTMLInputElement>).filter(
+							(o) => element.value.includes(o.value)
+							).map(o => o.outerHTML).join('');
+						
+						for (let c of n.children as HTMLCollectionOf<HTMLOptionElement>){
+							if (c.id == alreadySelected){
+							c.selected = true;
+							// alert(c.id)
+							}
+						}
+					}
+				}
+
+				// addes the old option to past dropdowns
+
+				// adds the old option for future uses
+
+
+				break;
+		}
+	})
+
+	document.addEventListener('click', function (event) {
+		const element = event.target as HTMLElement;
+		if (event != null)
+			switch (element!.id) {
+				case 'add-assignment-group':
+					(element.previousElementSibling)!.insertAdjacentHTML('beforeend', assigroupHTML);
+					break;
+				case 'add-emoji-group':
+					(element.previousElementSibling)!.insertAdjacentHTML('beforeend', emojigroupHTML);
+					break;
+				case 'remove-assign-type':
+					OptionsPage.getEmojiGroups();
+					element.parentElement?.remove();
+					break;
+				case 'remove-emoji-group':
+					element.parentElement?.parentElement?.remove();
+					break;
+			}
+	});
+})
+			
+			
 /*
  * Warn If Unsaved Changes on Exit
  */

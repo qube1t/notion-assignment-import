@@ -4,6 +4,7 @@
 <head>
   <meta charset='utf-8'>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
 
   <title>Options | Notion Canvas Assignment Import</title>
 
@@ -213,19 +214,49 @@
     </div>
 
     <h2>Page Emojis</h2>
-    <div class='tile'>
-      <div id='course-emojis-group' class='row'>
-        <div>
-          <label for='course-emojis-codes'>Notion course code</label>
-          <div id='course-emojis-codes' class='key-value-group-key'></div>
+    <fieldset style="border: 0;">
+      <h3><input type="radio" name="emoji-selector" id="emoji-sel-course" checked id="course"> Based on Courses</h3>
+      <div class='tile' id="emoji-groups-course">
+        <div id='course-emojis-group' class='row'>
+          <div>
+            <label for='course-emojis-codes'>Notion course code</label>
+            <div id='course-emojis-codes' class='key-value-group-key'></div>
+          </div>
+          <div data-width='50%'>
+            <label for='course-emojis-emojis'>Emoji</label>
+            <div id='course-emojis-emojis' class='key-value-group-value'></div>
+          </div>
         </div>
-        <div data-width='50%'>
-          <label for='course-emojis-emojis'>Emoji</label>
-          <div id='course-emojis-emojis' class='key-value-group-value'></div>
-        </div>
+
+        <button type='reset' id='options-restore-notion-emojis' class='button red hover row hidden'>Restore Default</button>
       </div>
 
-      <button type='reset' id='options-restore-notion-emojis' class='button red hover row hidden'>Restore Default</button>
+      <h3><input type="radio" name="emoji-selector" id="emoji-sel-assignment-group"> Based on Assignment Groups</h3>
+      <div class='tile' id="emoji-groups-assignment-type" style="display:flex; flex-direction: column; gap:0">
+        <div style="display: flex; flex-direction: column; border:1px">
+        <!-- <div style="display: flex; flex-direction: row; justify-content: space-between;">
+          <input placeholder="Group Name eg. Quizzes" style="margin-right: 10px"> 
+          <input placeholder="Insert emoji" style="margin-right:10px">
+          <button type='reset' id='remove-emoji-group' class='button red hover row'>Remove Group</button>
+        </div>
+      <div id="assignment-groups-container" style="display: flex; flex-direction: column;">
+        <div id="assignment-group-countainer" style="display: flex; flex-direction:row; justify-content: space-between;">
+          <select style="flex:2; margin-right: 10px" name="courses" id="courses">
+            <option value="volvo">121</option>
+          </select>
+          <select style="flex:2; margin-right: 10px" name="assignment-group" id="assignment-group">
+            <option value="volvo">Quizzes</option>
+          </select>
+          <button type='reset' id='remove-assign-type' style="flex:0.3;" class='button red hover row'>X</button>
+        </div>
+    </div>
+      <button type='button' id='add-assignment-group' class='button green hover row'>Add an Assignment Group</button> -->
+    </div>  
+    <button type='button' id='add-emoji-group' class='button green hover row'>Add Emoji Group</button>
+  </div>
+    </fieldset>
+
+      <!-- <button type='reset' id='options-restore-notion-emojis' class='button red hover row hidden'>Restore Default</button> -->
     </div>
   </section>
 
@@ -248,6 +279,11 @@
   </section>
 
   <script type='module' src='options.js'></script>
+  <!-- <script>
+    function testFunc(){
+	    alert('hi')
+}
+  </script> -->
 </body>
 
 </html>

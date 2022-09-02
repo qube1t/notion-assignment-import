@@ -12,6 +12,7 @@ export interface IFetchedAssignment {
 	url: string;
 	available: string;
 	due: string;
+	type: string
 }
 
 export interface SavedAssignments {
@@ -55,7 +56,7 @@ function roundToNextHour(date: Date): Date {
 
 		const timeNow = new Date();
 
-		const canvasAssignments = assignmentGroups.flatMap(group => group.assignments)
+		const canvasAssignments = assignmentGroups.flatMap(group => group.assignments.map(x => {x.type = group.name; return x}))
 			.filter(assignment => options.canvas.importMissingDueDates || assignment.due_at)
 			.sort(({ due_at: a }, { due_at: b }) => {
 				return Date.parse(a ?? timeNow) - Date.parse(b ?? timeNow);
@@ -69,7 +70,10 @@ function roundToNextHour(date: Date): Date {
 				url: assignment.html_url,
 				available: assignment.unlock_at ?? roundToNextHour(timeNow).toISOString(),
 				due: assignment.due_at,
+				type: assignment.type
 			}));
+
+		console.log(alert(JSON.stringify(canvasAssignments)))
 
 		const savedAssignments = await Storage.getSavedAssignments();
 
