@@ -506,17 +506,18 @@ Storage.getSavedAssignments().then(assignmentByCourses => {
 		// localStorage.setItem("courses", JSON.stringify(courses));
 	// let array_optionHTML = Object.values(assignmentTypeByCourses);
 	
+	assignmentGroupsHTML.unshift('<option value="-1" selected >Assignment Group</option>')
+
 	console.log(assignmentGroupsHTML)
 	console.log(assignmentGroupsHTML.join(''))
 
 	const assigroupHTML = `
 	<div id="assignment-group-countainer" style="display: flex; flex-direction:row; justify-content: space-between;">
 		<select style="flex:2; margin-right: 10px" name="courses" class="courses-select">
-		<option value="" selected disabled hidden>Course</option>
+		<option value="-1" selected disabled hidden>Course</option>
 		${coursesHTML.join('')}
 		</select>
 		<select style="flex:2; margin-right: 10px" name="assignment-group" class="assignment-group-select">
-		<option value="" selected disabled hidden>Assignment Group</option>
 		${assignmentGroupsHTML.join('')}
 		</select>
 		<button type='reset' id='remove-assign-type' style="flex:0.3;" class='button red hover row'>X</button>
@@ -553,48 +554,57 @@ Storage.getSavedAssignments().then(assignmentByCourses => {
 		if (event != null)
 		switch (element!.className) {
 			case 'courses-select':
+				// filters the next select element to only show the assignment groups of the selected course
 				(element.nextElementSibling)!.innerHTML = ([... inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(
-					(o) => element.value.includes(o.value)
+					(o) => element.value.includes(o.value) || o.value == '-1'
 				  ).map(o => o.outerHTML).join('')
 				break;
 
 			case 'assignment-group-select':
 				// console.log(element.options[element.options.selectedIndex].id)
 				// removes the selected option from future uses
-				console.log(([...inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(elem => elem.id != element.options[element.options.selectedIndex].id).map(elem => elem.outerHTML).join(''))
-				let optionsElem = ([...inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(elem => elem.id != element.options[element.options.selectedIndex].id).map(elem => elem.outerHTML).join('')
 
-				var _inputSelectsDOM = document.createElement("input");
-				_inputSelectsDOM.innerHTML = optionsElem;
-				inputSelectsDOMChildren = _inputSelectsDOM.children;
+				// console.log(([...inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(elem => elem.id != element.options[element.options.selectedIndex].id).map(elem => elem.outerHTML).join(''))
+				// let optionsElem = ([...inputSelectsDOMChildren] as Array<HTMLInputElement>).filter(elem => elem.id != element.options[element.options.selectedIndex].id).map(elem => elem.outerHTML).join('')
 
-				// removes selected option from past dropdowns
-				var otherSelects = document.getElementsByClassName('assignment-group-select');
-				for (let n of otherSelects as HTMLCollectionOf<HTMLSelectElement>) {
-					if (n != element && n.value == element.value){
-						let alreadySelected;
-						for (let c of n.children as HTMLCollectionOf<HTMLOptionElement>){
-							console.log(c)
-							if (c.id == element.options[element.options.selectedIndex].id)
-								c.value = 'X';
-							if (c.selected == true){
-								alreadySelected = c.id
-							}
-							}
-						// alert(alreadySelected);
+				// var _inputSelectsDOM = document.createElement("input");
+				// _inputSelectsDOM.innerHTML = optionsElem;
+				// inputSelectsDOMChildren = _inputSelectsDOM.children;
 
-						(n)!.innerHTML = ([... n.children] as Array<HTMLInputElement>).filter(
-							(o) => element.value.includes(o.value)
-							).map(o => o.outerHTML).join('');
+				// // removes selected option from past dropdowns
+				// var otherSelects = document.getElementsByClassName('assignment-group-select');
+				// for (let n of otherSelects as HTMLCollectionOf<HTMLSelectElement>) {
+				// 	if (n != element && n.value == element.value){
+				// 		let alreadySelected;
+				// 		for (let c of n.children as HTMLCollectionOf<HTMLOptionElement>){
+				// 			console.log(c)
+				// 			if (c.id == element.options[element.options.selectedIndex].id)
+				// 				c.value = 'X';
+				// 			if (c.selected == true){
+				// 				alreadySelected = c.id
+				// 			}
+				// 			}
+				// 		// alert(alreadySelected);
+
+				// 		(n)!.innerHTML = ([... n.children] as Array<HTMLInputElement>).filter(
+				// 			(o) => element.value.includes(o.value)
+				// 			).map(o => o.outerHTML).join('');
 						
-						for (let c of n.children as HTMLCollectionOf<HTMLOptionElement>){
-							if (c.id == alreadySelected){
-							c.selected = true;
-							// alert(c.id)
-							}
-						}
-					}
-				}
+				// 		for (let c of n.children as HTMLCollectionOf<HTMLOptionElement>){
+				// 			if (c.id == alreadySelected){
+				// 			c.selected = true;
+				// 			// alert(c.id)
+				// 			}
+				// 		}
+				// 	}
+				// }
+
+				console.log(document.querySelectorAll('select option[value="' + element.value + '"][id ="'+ element.options[element.options.selectedIndex].id +'"]:checked'))
+				// console.log(element.id)
+				if (([...document.querySelectorAll('select option[value="' + element.value + '"][id ="'+ element.options[element.options.selectedIndex].id +'"]:checked')] as Array<HTMLSelectElement>)!.length > 1) {
+					element.value= '-1';
+					alert('You have already selected this option previously - please choose another.')
+				  }
 
 				// addes the old option to past dropdowns
 
